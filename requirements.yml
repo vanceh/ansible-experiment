@@ -1,0 +1,9 @@
+---
+- src: geerlingguy.repo-epel
+- src: geerlingguy.firewall
+- src: geerlingguy.ntp
+- src: geerlingguy.git
+- src: geerlingguy.java
+- src: geerlingguy.jenkins
+- src: geerlingguy.pip
+- src: openstack.jenkins-job-builder

@@ -1,0 +1,27 @@
+---
+- hosts: jenkins
+  gather_facts: yes
+
+  vars_files:
+    - vars/main.yml
+
+  roles:
+    - geerlingguy.repo-epel
+    - geerlingguy.firewall
+    - geerlingguy.git
+    - geerlingguy.java
+    - geerlingguy.jenkins
+    - geerlingguy.pip
+    - openstack.jenkins-job-builder
+
+  tasks:
+    - git:
+        repo: https://github.com/vanceh/ansible-experiment.git
+        dest: /home/vagrant/jenkins_job_src
+        version: qa
+    - name: foo
+      command: /usr/bin/jenkins-jobs --conf ./jenkins_jobs.conf update test.yml
+      args:    
+        chdir: jenkins_job_src/jenkins_jobs
+        
+        
