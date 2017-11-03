@@ -6,7 +6,7 @@
     - vars/main.yml
 
   roles:
-    - geerlingguy.repo-epel
+    - epiloque.epel
     - geerlingguy.firewall
     - geerlingguy.git
     - geerlingguy.java
