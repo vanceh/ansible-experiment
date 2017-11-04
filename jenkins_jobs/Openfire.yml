@@ -1,6 +1,7 @@
 ---
 - job:
-    name: my_hello_world_job
+    name: Openfire
+    description: Builds and deploys IMYD fork of Openfire.  This configuration managed via ansible, changes made manually will be lost.
     parameters:
       - string:
           name: Message

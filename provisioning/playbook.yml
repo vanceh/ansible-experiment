@@ -20,7 +20,7 @@
         dest: /home/vagrant/jenkins_job_src
         version: qa
     - name: foo
-      command: /usr/bin/jenkins-jobs --conf ./jenkins_jobs.conf update test.yml
+      command: /usr/bin/jenkins-jobs --conf ./jenkins_jobs.conf update test.yml Openfire.yml
       args:    
         chdir: jenkins_job_src/jenkins_jobs
         

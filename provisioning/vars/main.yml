@@ -4,6 +4,13 @@ ntp_timezone: America/Boston
 java_packages:
   - java-1.8.0-openjdk
 
+jenkins_plugins:
+  - structs
+  - script-security
+  - job-dsl
+
+jenkins_plugins_state: latest
+  
 firewall_allowed_tcp_ports:
   - "22"
   - "25"
