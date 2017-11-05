@@ -16,16 +16,22 @@
     - openstack.jenkins-job-builder
 
   tasks:
+    - name: Install ant
+      yum: pkg={{item}} state=latest
+      with_items:
+        - ant
+        - ant-junit
+
     # flushing causes Jenkins to restart, which assures plugins are available
     - meta: flush_handlers
-    - name: Wait untils Jenkins web UI is available
+    - name: Wait until Jenkins web UI is available
       shell: curl --head --silent http://localhost:8080/
       register: result
       until: result.stdout.find("200 OK") != -1
       retries: 12
       delay: 5        
         
-    - name: Add Jenkins credentials
+    - name: Add Jenkins credentials - user/pass 
       jenkins_script:
         user: admin
         password: "{{ jenkins_admin_password }}"
@@ -33,8 +39,56 @@
             import com.cloudbees.plugins.credentials.impl.*;
             import com.cloudbees.plugins.credentials.*;
             import com.cloudbees.plugins.credentials.domains.*;
-            Credentials c = (Credentials) new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,"github-credentials", "Github robot user", "{{ github_user }}", "{{ github_password }}")
+            Credentials c = (Credentials) new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,"{{ item.id }}", "{{ item.desc }}", 
+            "{{ item.user }}", "{{ item.pass }}")
             SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), c)
+      with_items:
+        - { id: github-credentials, desc: "Github robot user", user: "{{ github_user }}", pass: "{{ github_password }}" }
+
+    - name: Add Jenkins credentials - secret text 
+      jenkins_script:
+        user: admin
+        password: "{{ jenkins_admin_password }}"
+        script: |
+            import com.cloudbees.plugins.credentials.*
+            import com.cloudbees.plugins.credentials.domains.*
+            import hudson.util.Secret
+            import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl
+
+            Credentials c = new StringCredentialsImpl( CredentialsScope.GLOBAL, "{{ item.id }}", "{{ item.desc }}", 
+            Secret.fromString("{{ item.text }}" ) )
+            SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), c)
+      with_items:
+        - { id: openfire-encryptor, desc: "Openfire property encryptor", text: "{{ openfire_encryptor }}" }
+
+    - name: Copy secret files for Jenkins to remote
+      copy:
+        src: "{{ item.path }}"
+        dest: ~jenkins/temp_secret_files/
+        owner: jenkins
+      with_items:
+        - { id: apns-cert, desc: "Apple (sandbox) Push Notification cert in p12 format", path: "aps_qa.p12" }
+        - { id: openfire-keystore, desc: "Openfire SSL keystore", path: "openfire_keystore" } 
+        
+    - name: Add Jenkins credentials - secret file 
+      jenkins_script:
+        user: admin
+        password: "{{ jenkins_admin_password }}"
+        script: |
+            import com.cloudbees.plugins.credentials.*
+            import com.cloudbees.plugins.credentials.domains.*
+            import org.apache.commons.fileupload.FileItem
+            import org.jenkinsci.plugins.plaincredentials.impl.FileCredentialsImpl
+
+            File f = new File( "/var/lib/jenkins/temp_secret_files/{{item.path }}" )
+            noFileItem = [ getName: { return "" } ] as FileItem
+
+            Credentials c = new FileCredentialsImpl( CredentialsScope.GLOBAL, "{{ item.id }}", "{{ item.desc }}", 
+            noFileItem, f.getName(), f.text )
+            SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), c)
+      with_items:
+        - { id: apns-cert, desc: "Apple (sandbox) Push Notification cert in p12 format", path: "aps_qa.p12" }
+        - { id: openfire-keystore, desc: "Openfire SSL keystore", path: "openfire_keystore" }
 
     - name: Copy Jenkins Job Builder YAMLs to server
       copy:

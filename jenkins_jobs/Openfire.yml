@@ -7,9 +7,44 @@
             url: https://github.com/IMYourDoc/Openfire-IMYD.git
             credentials-id: github-credentials
             branches: [ imyd-qa ]
+            wipe-workspace: false
 
     triggers:
       - pollscm: "H/30 * * * *"
 
+    wrappers:
+      - credentials-binding:
+        - text:
+            credential-id: openfire-encryptor
+            variable: OPENFIRE_SECRET
+        - file:
+            credential-id: apns-cert
+            variable: APNS_CERT
+        - file:
+            credential-id: openfire-keystore
+            variable: OPENFIRE_KEYSTORE
+            
+    builders:
+      - ant: 
+         targets: imyd
+         buildfile: build/build.xml
+      - shell: |
+            # update the key for decrypting the database password
+            sed -i -e "s|INSERTSECRETHERE|$OPENFIRE_SECRET|" target/openfire/conf/security.xml
 
-    
+            # environment-specific stuff
+            sed -i -e "s|OPENFIRE_SCHEMA_NAME|openfire_qa|;s|OPENFIRE_DB_PASSWORD|VGQjfVPkXhkzlwshP6iSJg==|;s|OPENFIRE_DB_USER|qa|" target/openfire/conf/openfire.xml
+            mv target/openfire/lib/log4j_qa.xml target/openfire/lib/log4j.xml 
+
+            # put secret files in place
+            mkdir -p target/openfire/resources/security
+            cp $OPENFIRE_KEYSTORE target/openfire/resources/security/keystore
+            cp $APNS_CERT target/openfire/resources/aps_development.p12
+
+            #kill previous invocation, restart, save the PID for next kill
+            kill `cat ~/openfire.pid` || echo "Couldn't kill ~/openfire.pid"
+            BUILD_ID=dontKillMe OPENFIRE_HOME=./target/openfire ./target/openfire/bin/openfire.sh > ./target/openfire/logs/console.out &
+            echo $! > ~/openfire.pid
+
+
+      

@@ -5,8 +5,10 @@ java_packages:
   - java-1.8.0-openjdk
 
 jenkins_plugins:
+  - ant
   - apache-httpcomponents-client-4-api
   - credentials
+  - credentials-binding
   - display-url-api
   - workflow-scm-step
   - git-client
@@ -16,6 +18,7 @@ jenkins_plugins:
   - junit
   - mailer
   - matrix-project
+  - plain-credentials
   - scm-api
   - script-security
   - ssh-credentials
