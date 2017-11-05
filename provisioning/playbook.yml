@@ -4,6 +4,7 @@
 
   vars_files:
     - vars/main.yml
+    - vars/qa.yml
 
   roles:
     - epiloque.epel
@@ -15,13 +16,35 @@
     - openstack.jenkins-job-builder
 
   tasks:
-    - git:
-        repo: https://github.com/vanceh/ansible-experiment.git
-        dest: /home/vagrant/jenkins_job_src
-        version: qa
-    - name: foo
-      command: /usr/bin/jenkins-jobs --conf ./jenkins_jobs.conf update test.yml Openfire.yml
-      args:    
-        chdir: jenkins_job_src/jenkins_jobs
+    # flushing causes Jenkins to restart, which assures plugins are available
+    - meta: flush_handlers
+    - name: Wait untils Jenkins web UI is available
+      shell: curl --head --silent http://localhost:8080/
+      register: result
+      until: result.stdout.find("200 OK") != -1
+      retries: 12
+      delay: 5        
         
+    - name: Add Jenkins credentials
+      jenkins_script:
+        user: admin
+        password: "{{ jenkins_admin_password }}"
+        script: |
+            import com.cloudbees.plugins.credentials.impl.*;
+            import com.cloudbees.plugins.credentials.*;
+            import com.cloudbees.plugins.credentials.domains.*;
+            Credentials c = (Credentials) new UsernamePasswordCredentialsImpl(CredentialsScope.GLOBAL,"github-credentials", "Github robot user", "{{ github_user }}", "{{ github_password }}")
+            SystemCredentialsProvider.getInstance().getStore().addCredentials(Domain.global(), c)
+
+    - name: Copy Jenkins Job Builder YAMLs to server
+      copy:
+        src: ../jenkins_jobs
+        dest: ~jenkins/
+
+    - name: Run Jenkins Job Builder
+      command: /usr/bin/jenkins-jobs --conf ./jenkins_jobs.conf update ./
+      args:    
+        chdir: ~jenkins/jenkins_jobs
+    
+     
         

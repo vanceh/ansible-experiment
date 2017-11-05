@@ -1,11 +1,15 @@
 ---
 - job:
     name: Openfire
-    description: Builds and deploys IMYD fork of Openfire.  This configuration managed via ansible, changes made manually will be lost.
-    parameters:
-      - string:
-          name: Message
-          default: Hello World
-          description: A message to echo
-    builders:
-      - shell: "echo $Message"
+    description: Builds and deploys IMYD fork of Openfire.  This configuration managed via JJB, changes made manually will be lost.
+    scm: 
+        - git:
+            url: https://github.com/IMYourDoc/Openfire-IMYD.git
+            credentials-id: github-credentials
+            branches: [ imyd-qa ]
+
+    triggers:
+      - pollscm: "H/30 * * * *"
+
+
+    

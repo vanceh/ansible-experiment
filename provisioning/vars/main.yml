@@ -5,10 +5,23 @@ java_packages:
   - java-1.8.0-openjdk
 
 jenkins_plugins:
-  - structs
-  - script-security
+  - apache-httpcomponents-client-4-api
+  - credentials
+  - display-url-api
+  - workflow-scm-step
+  - git-client
+  - git
   - job-dsl
-
+  - jsch
+  - junit
+  - mailer
+  - matrix-project
+  - scm-api
+  - script-security
+  - ssh-credentials
+  - structs
+  - workflow-step-api
+  
 jenkins_plugins_state: latest
   
 firewall_allowed_tcp_ports:
