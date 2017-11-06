@@ -25,8 +25,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Ansible provisioner.
   config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "provisioning/playbook.yml"
-    ansible.inventory_path = "provisioning/inventory"
+    ansible.playbook = "playbooks/jenkins-box.yml"
+    ansible.inventory_path = "playbooks/inventory/jenkins-inventory.yml"
     ansible.vault_password_file = "vault-qa-password"
     ansible.become = true
   end

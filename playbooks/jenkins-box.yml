@@ -63,7 +63,7 @@
 
     - name: Copy secret files for Jenkins to remote
       copy:
-        src: "{{ item.path }}"
+        src: "file-assets/{{ item.path }}"
         dest: ~jenkins/temp_secret_files/
         owner: jenkins
       with_items:
