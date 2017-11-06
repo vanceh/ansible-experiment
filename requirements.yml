@@ -1,5 +1,5 @@
 ---
-- src: geerlingguy.repo-epel
+- src: epiloque.epel
 - src: geerlingguy.firewall
 - src: geerlingguy.ntp
 - src: geerlingguy.git
